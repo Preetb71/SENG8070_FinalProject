@@ -17,5 +17,5 @@ import PhotoApi from "./strategy/postgresql/photo";
 
   app.listen(8000, () => {
     console.log(`express server started on 8000`);
-  });
+  }); 
 })().catch((err) => console.log(err));

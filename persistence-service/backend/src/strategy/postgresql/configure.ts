@@ -1,5 +1,8 @@
 import { DataSource } from "typeorm";
 import { Photo } from "./photo/photo";
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 export const postgresDataSource = new DataSource({
   type: "postgres",
