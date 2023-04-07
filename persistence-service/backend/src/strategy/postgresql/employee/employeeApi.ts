@@ -1,6 +1,8 @@
 import { Express } from "express";
 import { DataSource } from "typeorm";
 import { Employee } from "./employee";
+import { EmployeeCategory } from "../employeeCategory";
+import { json } from "stream/consumers";
 
 export default class EmployeeApi {
     #dataSource: DataSource;
@@ -9,7 +11,7 @@ export default class EmployeeApi {
     constructor(dataSource: DataSource, express: Express) {
       this.#dataSource = dataSource;
       this.#express = express;
-  
+
       this.#express.get("/employee/:employeeId", async (req, res) => {
         return res.json(
           await this.#dataSource.manager.findBy(Employee, {
@@ -43,5 +45,32 @@ export default class EmployeeApi {
           employeeId: employee.employeeId,
         });
       });
+
+       //Delete Category using employeeId
+       this.#express.delete("/employee/:employeeId",async (req, res) => {
+
+        return res.json(   
+          await this.#dataSource.manager.createQueryBuilder()
+          .delete().from(Employee)
+          .where("employeeId = :employeeId", {employeeId:parseInt(req.params.employeeId)})
+          .execute(),
+          // await this.#dataSource.manager.createQueryBuilder()
+          // .delete().from(EmployeeCategory)
+          // .where("employeeId = :employeeId", {employeeId:parseInt(req.params.employeeId)})
+          // .execute()
+          );
+        });
+
+          //Update Category using employeeId
+          this.#express.put("/employee/:employeeId",async (req, res) => {
+            const { body } = req;
+            return res.json(   
+              await this.#dataSource.manager.createQueryBuilder()
+              .update(Employee)
+              .set({firstName:body.firstName, lastName:body.lastName, seniority:body.seniority})
+              .where("employeeId = :employeeId", {employeeId:parseInt(req.params.employeeId)})
+              .execute(),
+              );
+            });
     }
   }

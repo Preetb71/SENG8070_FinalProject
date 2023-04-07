@@ -1,6 +1,8 @@
 import { Express } from "express";
 import { DataSource } from "typeorm";
 import { EmployeeCategory } from "./employeeCategory";
+import { parse } from "path";
+import { request } from "http";
 
 export default class EmployeeCategoryApi {
     #dataSource: DataSource;
@@ -41,7 +43,32 @@ export default class EmployeeCategoryApi {
         res.status(200);
         return res.json({
           employeeId: employeeCategory.employeeId,
+          category: employeeCategory.category,
         });
       });
+
+      //Delete Category using employeeId
+      this.#express.delete("/employeeCategory/:employeeId",async (req, res) => {
+        return res.json(   
+          await this.#dataSource.manager.createQueryBuilder()
+          .delete().from(EmployeeCategory)
+          .where("employeeId = :employeeId", {employeeId:parseInt(req.params.employeeId)})
+          .execute()
+          );
+        });
+
+        //Update Category using employeeId
+        this.#express.put("/employeeCategory/:employeeId",async (req, res) => {
+          const { body } = req;
+          return res.json(   
+            await this.#dataSource.manager.createQueryBuilder()
+            .update(EmployeeCategory)
+            .set({category: body.category})
+            .where("employeeId = :employeeId", {employeeId:parseInt(req.params.employeeId)})
+            .execute()
+            );
+          });
     }
+
+    
   }
