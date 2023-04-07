@@ -21,31 +21,31 @@ export default class EmployeeCategoryApi {
         );
       });
   
-      this.#express.post("/employeeCategory", async (req, res) => {
-        const { body } = req;
-        console.log(body);
+      // this.#express.post("/employeeCategory", async (req, res) => {
+      //   const { body } = req;
+      //   console.log(body);
   
-        const employeeCategory = new EmployeeCategory();
+      //   const employeeCategory = new EmployeeCategory();
   
-        employeeCategory.employeeId = body.employeeId;  //Pass in the employeeID that exists
-        employeeCategory.category = body.category;
+      //   employeeCategory.employeeId = body.employeeId;  //Pass in the employeeID that exists
+      //   employeeCategory.category = body.category;
   
-        try {
-          await this.#dataSource.manager.save(employeeCategory);
-          console.log(`EmployeeCategory has been created with the employee id: ${employeeCategory.employeeId}`);
-        } catch (err) {
-          res.status(503);
-          return res.json({
-            error: "Employee Category creation failed in db.",
-          });
-        }
+      //   try {
+      //     await this.#dataSource.manager.save(employeeCategory);
+      //     console.log(`EmployeeCategory has been created with the employee id: ${employeeCategory.employeeId}`);
+      //   } catch (err) {
+      //     res.status(503);
+      //     return res.json({
+      //       error: "Employee Category creation failed in db.",
+      //     });
+      //   }
   
-        res.status(200);
-        return res.json({
-          employeeId: employeeCategory.employeeId,
-          category: employeeCategory.category,
-        });
-      });
+      //   res.status(200);
+      //   return res.json({
+      //     employeeId: employeeCategory.employeeId,
+      //     category: employeeCategory.category,
+      //   });
+      // });
 
       //Delete Category using employeeId
       this.#express.delete("/employeeCategory/:employeeId",async (req, res) => {

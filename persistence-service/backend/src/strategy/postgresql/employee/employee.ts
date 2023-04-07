@@ -20,4 +20,9 @@ export class Employee {
   })
   seniority:string;
 
+  @Column({
+    length: 100,
+  })
+  category:string;
+
 }
