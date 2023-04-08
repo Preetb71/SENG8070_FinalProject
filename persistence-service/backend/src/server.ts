@@ -4,6 +4,7 @@ import postgresDataSource from "./strategy/postgresql";
 import PhotoApi from "./strategy/postgresql/photo";
 import EmployeeApi from "./strategy/postgresql/employee";
 import EmployeeCategoryApi from "./strategy/postgresql/employeeCategory";
+import DriverApi from "./strategy/postgresql/driver/driverApi";
 
 (async () => {
   const app = express();
@@ -23,6 +24,11 @@ import EmployeeCategoryApi from "./strategy/postgresql/employeeCategory";
   });
 
   new EmployeeCategoryApi(datasource, app);
+  app.get("/", (_, res) => {
+    return res.send("hello world");
+  });
+
+  new DriverApi(datasource, app);
   app.get("/", (_, res) => {
     return res.send("hello world");
   });

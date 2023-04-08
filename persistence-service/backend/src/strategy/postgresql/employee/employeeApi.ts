@@ -3,6 +3,7 @@ import { DataSource } from "typeorm";
 import { Employee } from "./employee";
 import { EmployeeCategory } from "../employeeCategory";
 import { json } from "stream/consumers";
+import { Driver } from "../driver";
 
 export default class EmployeeApi {
     #dataSource: DataSource;
@@ -61,13 +62,43 @@ export default class EmployeeApi {
           });
         }
 
+        if(employeeCategory.category.toLowerCase() == "driver")
+        {
+          const driver = new Driver();
+          driver.employeeId = employee.employeeId;
+          try {
+            await this.#dataSource.manager.save(driver);
+            console.log(`Driver has been created with the employee id: ${employee.employeeId}`);
+          } catch (err) {
+            res.status(503);
+            return res.json({
+              error: "Driver creation failed in db.",
+            });
+          }
+  
+        }
+        else if(employeeCategory.category.toLowerCase() == "mechanic")
+        {
+          // const mechanic = new Mechanic();
+          // mechanic.employeeId = employee.employeeId;
+          // try {
+          //   await this.#dataSource.manager.save(mechanic);
+          //   console.log(`Mechanic has been created with the employee id: ${employee.employeeId}`);
+          // } catch (err) {
+          //   res.status(503);
+          //   return res.json({
+          //     error: "Mechanic creation failed in db.",
+          //   });
+          // }
+        }
+
         res.status(200);
         return res.json({
           employeeId: employee.employeeId,
         });
       });
 
-       //Delete Category using employeeId
+       //Delete Employee using employeeId
        this.#express.delete("/employee/:employeeId",async (req, res) => {
 
         return res.json(   
@@ -82,7 +113,7 @@ export default class EmployeeApi {
           );
         });
 
-          //Update Category using employeeId
+          //Update Employee using employeeId
           this.#express.put("/employee/:employeeId",async (req, res) => {
             const { body } = req;
             return res.json(   
