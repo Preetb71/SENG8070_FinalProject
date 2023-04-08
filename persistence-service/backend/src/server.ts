@@ -5,6 +5,8 @@ import PhotoApi from "./strategy/postgresql/photo";
 import EmployeeApi from "./strategy/postgresql/employee";
 import EmployeeCategoryApi from "./strategy/postgresql/employeeCategory";
 import DriverApi from "./strategy/postgresql/driver/driverApi";
+import TruckApi from "./strategy/postgresql/truck/truckApi";
+import MechanicApi from "./strategy/postgresql/mechanic/mechanicApi";
 
 (async () => {
   const app = express();
@@ -29,6 +31,16 @@ import DriverApi from "./strategy/postgresql/driver/driverApi";
   });
 
   new DriverApi(datasource, app);
+  app.get("/", (_, res) => {
+    return res.send("hello world");
+  });
+
+  new TruckApi(datasource, app);
+  app.get("/", (_, res) => {
+    return res.send("hello world");
+  });
+
+  new MechanicApi(datasource, app);
   app.get("/", (_, res) => {
     return res.send("hello world");
   });

@@ -1,9 +1,10 @@
 import { Express } from "express";
-import { DataSource } from "typeorm";
+import { DataSource, IsNull } from "typeorm";
 import { Employee } from "./employee";
 import { EmployeeCategory } from "../employeeCategory";
 import { json } from "stream/consumers";
 import { Driver } from "../driver";
+import { Mechanic } from "../mechanic";
 
 export default class EmployeeApi {
     #dataSource: DataSource;
@@ -79,17 +80,18 @@ export default class EmployeeApi {
         }
         else if(employeeCategory.category.toLowerCase() == "mechanic")
         {
-          // const mechanic = new Mechanic();
-          // mechanic.employeeId = employee.employeeId;
-          // try {
-          //   await this.#dataSource.manager.save(mechanic);
-          //   console.log(`Mechanic has been created with the employee id: ${employee.employeeId}`);
-          // } catch (err) {
-          //   res.status(503);
-          //   return res.json({
-          //     error: "Mechanic creation failed in db.",
-          //   });
-          // }
+          const mechanic = new Mechanic();
+          mechanic.employeeId = employee.employeeId;
+          mechanic.brandSpecialization = null;  //Keep it empty initially. There is a add brand specialization method in mechanic api
+          try {
+            await this.#dataSource.manager.save(mechanic);
+            console.log(`Mechanic has been created with the employee id: ${employee.employeeId}`);
+          } catch (err) {
+            res.status(503);
+            return res.json({
+              error: "Mechanic creation failed in db.",
+            });
+          }
         }
 
         res.status(200);
