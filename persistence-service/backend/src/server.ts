@@ -9,6 +9,8 @@ import TruckApi from "./strategy/postgresql/truck/truckApi";
 import MechanicApi from "./strategy/postgresql/mechanic/mechanicApi";
 import TruckTripApi from "./strategy/postgresql/truckTrip/truckTripApi";
 import CustomerApi from "./strategy/postgresql/customer/customerApi";
+import RepairTruckApi from "./strategy/postgresql/repairTruck/repairTruckApi";
+import ShipmentApi from "./strategy/postgresql/shipment/shipmentApi";
 
 (async () => {
   const app = express();
@@ -56,6 +58,17 @@ import CustomerApi from "./strategy/postgresql/customer/customerApi";
   app.get("/", (_, res) => {
     return res.send("hello world");
   });
+
+  new RepairTruckApi(datasource, app);
+  app.get("/", (_, res) => {
+    return res.send("hello world");
+  });
+
+  new ShipmentApi(datasource, app);
+  app.get("/", (_, res) => {
+    return res.send("hello world");
+  });
+
 
   app.listen(8000, () => {
     console.log(`express server started on 8000`);

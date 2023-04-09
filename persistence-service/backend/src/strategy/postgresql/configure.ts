@@ -8,6 +8,8 @@ import { Truck } from "./truck";
 import { Mechanic } from "./mechanic";
 import { TruckTrip } from "./truckTrip";
 import { Customer } from "./customer";
+import { RepairTruck } from "./repairTruck";
+import { Shipment } from "./shipment";
 dotenv.config();
 
 
@@ -18,7 +20,7 @@ export const postgresDataSource = new DataSource({
   username: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DB,
-  entities: [Photo,Employee,EmployeeCategory, Driver, Truck, Mechanic, TruckTrip, Customer],
+  entities: [Photo,Employee,EmployeeCategory, Driver, Truck, Mechanic, TruckTrip, Customer, RepairTruck, Shipment],
   synchronize: true,
   logging: false,
 });
