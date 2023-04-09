@@ -14,7 +14,7 @@ export class RepairTruck {
   //FirstName of employee who is mechanic 
   @OneToOne(()=>Employee,{nullable:true})
   @JoinColumn()
-  mechanicName:Employee['firstName']|null;
+  mechanicName:Employee['firstName'];
 
   @Column()
   daysOfRepair:number;
