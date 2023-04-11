@@ -52,6 +52,15 @@ export default class EmployeeApi {
         employee.lastName = body.lastName;
         employee.seniority = body.seniority;
         employee.category = body.category;
+
+        //IF USER ENTER ANYTHING OTHER THAN DRIVER OR MECHANIC
+        if(employee.category.toLowerCase() != "driver" && employee.category.toLowerCase() != "mechanic" )
+        {
+          res.status(503);
+          return res.json({
+            error: "Please enter a valid category for the employee.(Driver or Mechanic)",
+          });
+        }
   
         try {
           await this.#dataSource.manager.save(employee);
@@ -114,7 +123,8 @@ export default class EmployeeApi {
           firstName: employee.firstName,
           lastName:employee.lastName,
           seniority:employee.seniority,
-          category:employee.category
+          category:employee.category,
+          success:"Employee successfully added."
         });
       });
 
@@ -166,14 +176,6 @@ export default class EmployeeApi {
       //Update Employee using employeeId
       this.#express.put("/employee/:employeeId",async (req, res) => {
         const { body } = req;
-        // //IF EMPLOYEE IS NOT FOUND.
-        // if(employee == null)
-        // {
-        //   res.status(503);
-        //   return res.json({
-        //     error: "Employee with the entered id not found!"
-        //   })
-        // }
 
         try{
           await this.#dataSource.manager.update(Employee, parseInt(req.params.employeeId), {firstName:body.firstName, lastName:body.lastName, seniority:body.seniority});
@@ -188,7 +190,7 @@ export default class EmployeeApi {
        
         res.status(200);
         return res.json({
-         error:'Employee Successfully updated.'
+         success:'Employee Successfully updated.'
         });
     });
   }
