@@ -19,7 +19,7 @@ export default class EmployeeCategoryApi {
       //Get a employee's category
       this.#express.get("/employeeCategory/:employeeId", async (req, res) => {
         const employee =  await this.#dataSource.manager.findBy(Employee, {employeeId: parseInt(req.params.employeeId),});
-        if(employee == null)
+        if(employee.length <= 0)
         {
           res.status(503);
           return res.json({
@@ -39,7 +39,7 @@ export default class EmployeeCategoryApi {
       this.#express.delete("/employeeCategory/:employeeId",async (req, res) => {
 
         const employee =  await this.#dataSource.manager.findBy(Employee, {employeeId: parseInt(req.params.employeeId),});
-        if(employee[0] == null)
+        if(employee.length <= 0)
         {
           res.status(503);
           return res.json({
@@ -48,7 +48,7 @@ export default class EmployeeCategoryApi {
         }
 
         const employeeCategory =  await this.#dataSource.manager.findBy(EmployeeCategory, {employeeId: parseInt(req.params.employeeId),});
-        if(employee == null)
+        if(employeeCategory.length <= 0)
         {
           res.status(503);
           return res.json({
@@ -89,7 +89,7 @@ export default class EmployeeCategoryApi {
 
         //FETCH EMPLOYEE
         const employee =  await this.#dataSource.manager.findBy(Employee, {employeeId: parseInt(req.params.employeeId),});
-        if(employee == null)
+        if(employee.length <= 0)
         {
           res.status(503);
           return res.json({
@@ -99,7 +99,7 @@ export default class EmployeeCategoryApi {
 
         //FETCH EMPLOYEE CATEGORY
         const employeeCategory =  await this.#dataSource.manager.findBy(EmployeeCategory, {employeeId: parseInt(req.params.employeeId),});
-        if(employee == null)
+        if(employeeCategory.length <= 0)
         {
           res.status(503);
           return res.json({

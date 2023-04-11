@@ -21,13 +21,15 @@ export default class EmployeeApi {
         )
       })
 
+
+      //GET AN EMPLOYEE
       this.#express.get("/employee/:employeeId", async (req, res) => {
 
         const employee = await this.#dataSource.manager.findBy(Employee, {
           employeeId: parseInt(req.params.employeeId),
         })
 
-        if(employee == null)
+        if(employee.length <= 0)
         {
           res.status(503);
           return res.json({
@@ -36,7 +38,11 @@ export default class EmployeeApi {
         }
         res.status(200);
         return res.json({
-          employee
+          employeeId:employee[0].employeeId,
+          employeeFirstName:employee[0].firstName,
+          employeeLastName:employee[0].lastName,
+          employeeSeniority:employee[0].seniority,
+          employeeCategory:employee[0].category
         })
       });
   
@@ -128,7 +134,7 @@ export default class EmployeeApi {
         });
       });
 
-        //Delete Employee using employeeId
+      //DELETE AN EMPLOYEE AND ITS ASSOCIATED ENTITIES
         this.#express.delete("/employee/:employeeId",async (req, res) => {
 
         const employee = await this.#dataSource.manager.findOneBy(Employee, {
@@ -168,17 +174,99 @@ export default class EmployeeApi {
           await this.#dataSource.manager.remove(mechanic);
         }
 
-        return res.json(   
-          await this.#dataSource.manager.remove(employee),
-          );
+        await this.#dataSource.manager.remove(employee);
+
+        return res.json({
+          success:'Employee and its associated entities successfully removed from the db.'
+        });
       });
 
-      //Update Employee using employeeId
+      //UPDATE AN EMPLOYEE AND ITS ASSOCIATED ENTITIES
       this.#express.put("/employee/:employeeId",async (req, res) => {
         const { body } = req;
 
-        try{
-          await this.#dataSource.manager.update(Employee, parseInt(req.params.employeeId), {firstName:body.firstName, lastName:body.lastName, seniority:body.seniority});
+        //FETCH EMPLOYEE
+        const employee = await this.#dataSource.manager.findBy(Employee, {
+          employeeId: parseInt(req.params.employeeId),
+        });
+
+        if(employee.length <= 0)
+        {
+          res.status(503);
+          return res.json({
+            error:"Employee/Employee Category not found of the given ID"
+          });
+        }
+
+         //FETCH EMPLOYEE CATEGORY
+         const employeeCategory =  await this.#dataSource.manager.findBy(EmployeeCategory, {employeeId: parseInt(req.params.employeeId),});
+         if(employeeCategory.length <= 0)
+         {
+           res.status(503);
+           return res.json({
+             error:"Employee Category not found of the given ID"
+           });
+         }
+         
+        //FETCH DRIVER ENTITY (CAN BE NULL IF THE EXISTING CATEGORY IS MECHANIC)
+        const driver = await this.#dataSource.manager.findOneBy(Driver, {
+          employeeId: parseInt(req.params.employeeId),
+        });
+
+        //FETCH MECHANIC ENTITY (CAN BE NULL IF THE EXISTING CATEGORY IS DRIVER)
+        const mechanic = await this.#dataSource.manager.findOneBy(Mechanic, {
+          employeeId: parseInt(req.params.employeeId),
+        });
+
+        //IF NEW CATEGORY IS MECHANIC AND OLD CATEGORY IS DRIVER.
+        if(body.category.toLowerCase() == "mechanic" && employeeCategory[0].category.toLowerCase() == "driver" && mechanic == null)
+        {
+          await this.#dataSource.manager.remove(driver);
+          const newMechanic = new Mechanic();
+          newMechanic.brandSpecialization = null;
+          newMechanic.employeeId = employee[0].employeeId;
+
+          //SAVE MECHANIC TO DATABASE
+          try {
+            await this.#dataSource.manager.save(newMechanic);
+            console.log(`Mechanic has been created}`);
+          } catch (err) {
+            res.status(503);
+            return res.json({
+              error: "Mechanic creation failed in db.",
+            });
+          }
+        }
+         //IF NEW CATEGORY IS DRIVER AND OLD CATEGORY IS MECHANIC.
+        else if(body.category.toLowerCase() == "driver" && employeeCategory[0].category.toLowerCase() == "mechanic" && driver == null)
+        {
+          await this.#dataSource.manager.remove(mechanic);
+          const newDriver = new Driver();
+          newDriver.employeeId = employee[0].employeeId;
+
+          //SAVE MECHANIC TO DATABASE
+          try {
+            await this.#dataSource.manager.save(newDriver);
+            console.log(`Driver has been created}`);
+          } catch (err) {
+            res.status(503);
+            return res.json({
+              error: "Driver creation failed in db.",
+            });
+          }
+        }
+
+
+        employee[0].firstName = body.firstName;
+        employee[0].lastName = body.lastName;
+        employee[0].seniority = body.seniority;
+        employee[0].category = body.category;
+        employeeCategory[0].category = body.category;
+
+        //SAVE/UPDATE EMPLOYEE TO DATABASE
+        try
+        {
+          await this.#dataSource.manager.save(employee[0]);
         }
         catch(err)
         {
@@ -188,9 +276,25 @@ export default class EmployeeApi {
           });
         }
        
+        //SAVE/UPDATE EMPLOYEE CATEGORY TO DATABASE
+        try {
+          await this.#dataSource.manager.save(employeeCategory);
+          console.log(`Employee Category has been updated}`);
+        } catch (err) {
+          res.status(503);
+          return res.json({
+            error: "Employee Category Update failed in db.",
+          });
+        }
+
         res.status(200);
         return res.json({
-         success:'Employee Successfully updated.'
+          employeeId:employee[0].employeeId,
+          employeeFirstName:employee[0].firstName,
+          employeeLastName:employee[0].lastName,
+          employeeSeniority:employee[0].seniority,
+          employeeCategory:employee[0].category,
+          success:'Employee Successfully updated.'
         });
     });
   }
