@@ -11,11 +11,24 @@ export default class CustomerApi {
       this.#express = express;
 
       this.#express.get("/customer/:customerId", async (req, res) => {
-        return res.json(
-          await this.#dataSource.manager.findBy(Customer, {
-            customerId: parseInt(req.params.customerId),
-          })
-        );
+        const customer =  await this.#dataSource.manager.findOneBy(Customer, {
+          customerId: parseInt(req.params.customerId),
+        });
+
+        if(customer == null)
+        {
+          res.status(503);
+          return res.json({error:"No customer found with the given id."});
+        }
+
+        res.status(200);
+        return res.json({
+          customerId:customer.customerId,
+          customerName:customer.customerName,
+          customerAddress:customer.customerAddress,
+          customerPhoneNumberOne:customer.customerPhoneNumberOne,
+          customerPhoneNumberTwo:customer.customerPhoneNumberTwo
+        });
       });
   
       this.#express.post("/customer", async (req, res) => {
@@ -41,35 +54,69 @@ export default class CustomerApi {
         res.status(200);
         return res.json({
           customerId: customer.customerId,
+          customerName:customer.customerName,
+          customerAddress:customer.customerAddress,
+          customerPhoneNumberOne:customer.customerPhoneNumberOne,
+          customerPhoneNumberTwo:customer.customerPhoneNumberTwo
         });
       });
 
        //Delete Customer using customerId
        this.#express.delete("/customer/:customerId",async (req, res) => {
 
-        return res.json(   
-          await this.#dataSource.manager.createQueryBuilder()
-          .delete().from(Customer)
-          .where("customerId = :customerId", {customerId:parseInt(req.params.customerId)})
-          .execute(),
-          );
+        const customer = await this.#dataSource.manager.findOneBy(Customer,{
+          customerId:parseInt(req.params.customerId),
+        })
+
+        if(customer == null)
+        {
+          res.status(503);
+          return res.json({
+            error:"No customer found by the given id."
+          })
+        }
+
+        await this.#dataSource.manager.remove(customer);
+
+        res.status(200);
+        return res.json
+        ({
+            success:"Customer successfully removed from the db."
+          });
         });
 
-          //Update Customer using customerId
-          this.#express.put("/customer/:customerId",async (req, res) => {
-            const { body } = req;
-            return res.json(   
-              await this.#dataSource.manager.createQueryBuilder()
-              .update(Customer)
-              .set({
-                customerName:body.customerName,
-                customerAddress:body.customerAddress,
-                customerPhoneNumberOne:body.customerPhoneNumberOne,
-                customerPhoneNumberTwo:body.customerPhoneNumberTwo
+        //Update Customer using customerId
+        this.#express.put("/customer/:customerId",async (req, res) => {
+          const { body } = req;
+
+          const customer = await this.#dataSource.manager.findOneBy(Customer,{
+            customerId:parseInt(req.params.customerId),
+          })
+  
+          if(customer == null)
+          {
+            res.status(503);
+            return res.json({
+              error:"No customer found by the given id."
             })
-              .where("customerId = :customerId", {customerId:parseInt(req.params.customerId)})
-              .execute(),
-              );
-            });
+          }
+
+          customer.customerName = body.customerName;
+          customer.customerAddress = body.customerAddress;
+          customer.customerPhoneNumberOne = body.customerPhoneNumberOne;
+          customer.customerPhoneNumberTwo = body.customerPhoneNumberTwo;
+
+          await this.#dataSource.manager.save(customer);
+
+          res.status(200);
+          return res.json({
+            customerId:customer.customerId,
+            customerName:customer.customerName,
+            customerAddress:customer.customerAddress,
+            customerPhoneNumberOne:customer.customerPhoneNumberOne,
+            customerPhoneNumberTwo:customer.customerPhoneNumberTwo,
+            success:"Customer successfully updated."
+          });
+        });
     }
   }

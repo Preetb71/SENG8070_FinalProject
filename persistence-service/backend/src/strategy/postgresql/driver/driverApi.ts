@@ -16,37 +16,45 @@ export default class DriverApi {
   
       //Get a driver and their details
       this.#express.get("/driver/:employeeId", async (req, res) => {
-        const employee = await this.#dataSource.manager.findBy(Employee, {
+        const employee = await this.#dataSource.manager.findOneBy(Employee, {
           employeeId: parseInt(req.params.employeeId),
         });
 
-        const driver = await this.#dataSource.manager.findBy(Driver, {
+        const driver = await this.#dataSource.manager.findOneBy(Driver, {
           employeeId: parseInt(req.params.employeeId),
         });
 
+        if(employee == null)
+        {
+          res.status(503);
+          return res.json({
+            error:"Employee Not Found with the given Id.",
+          })
+        }
 
-        if(driver.length <= 0)
+        if(driver == null)
         {
           res.status(503);
           return res.json({
             error:"Driver Employee Not Found with the given Id.",
           })
         }
+
         return res.json({
-          driverId:driver[0].id,
-          employeeId:employee[0].employeeId,
-          employeeFirstName:employee[0].firstName,
-          employeeLastName:employee[0].lastName,
-          employeeSeniority:employee[0].seniority,
-          employeeCategory:employee[0].category
+          driverId:driver.id,
+          employeeId:employee.employeeId,
+          employeeFirstName:employee.firstName,
+          employeeLastName:employee.lastName,
+          employeeSeniority:employee.seniority,
+          employeeCategory:employee.category
         });
       });
   
       //Delete Driver using employeeId (Also deletes from employee and employee category automatically which are drivers)
       this.#express.delete("/driver/:employeeId",async (req, res) => {
 
-        const employee =  await this.#dataSource.manager.findBy(Employee, {employeeId: parseInt(req.params.employeeId),});
-        if(employee.length <= 0)
+        const employee =  await this.#dataSource.manager.findOneBy(Employee, {employeeId: parseInt(req.params.employeeId),});
+        if(employee == null)
         {
           res.status(503);
           return res.json({
@@ -54,8 +62,8 @@ export default class DriverApi {
           });
         }
 
-        const employeeCategory =  await this.#dataSource.manager.findBy(EmployeeCategory, {employeeId: parseInt(req.params.employeeId),});
-        if(employeeCategory.length <= 0)
+        const employeeCategory =  await this.#dataSource.manager.findOneBy(EmployeeCategory, {employeeId: parseInt(req.params.employeeId),});
+        if(employeeCategory == null)
         {
           res.status(503);
           return res.json({

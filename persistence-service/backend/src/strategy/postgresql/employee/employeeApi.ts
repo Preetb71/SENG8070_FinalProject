@@ -25,11 +25,11 @@ export default class EmployeeApi {
       //GET AN EMPLOYEE
       this.#express.get("/employee/:employeeId", async (req, res) => {
 
-        const employee = await this.#dataSource.manager.findBy(Employee, {
+        const employee = await this.#dataSource.manager.findOneBy(Employee, {
           employeeId: parseInt(req.params.employeeId),
         })
 
-        if(employee.length <= 0)
+        if(employee == null)
         {
           res.status(503);
           return res.json({
@@ -38,11 +38,11 @@ export default class EmployeeApi {
         }
         res.status(200);
         return res.json({
-          employeeId:employee[0].employeeId,
-          employeeFirstName:employee[0].firstName,
-          employeeLastName:employee[0].lastName,
-          employeeSeniority:employee[0].seniority,
-          employeeCategory:employee[0].category
+          employeeId:employee.employeeId,
+          employeeFirstName:employee.firstName,
+          employeeLastName:employee.lastName,
+          employeeSeniority:employee.seniority,
+          employeeCategory:employee.category
         })
       });
   
@@ -186,11 +186,11 @@ export default class EmployeeApi {
         const { body } = req;
 
         //FETCH EMPLOYEE
-        const employee = await this.#dataSource.manager.findBy(Employee, {
+        const employee = await this.#dataSource.manager.findOneBy(Employee, {
           employeeId: parseInt(req.params.employeeId),
         });
 
-        if(employee.length <= 0)
+        if(employee == null)
         {
           res.status(503);
           return res.json({
@@ -199,8 +199,8 @@ export default class EmployeeApi {
         }
 
          //FETCH EMPLOYEE CATEGORY
-         const employeeCategory =  await this.#dataSource.manager.findBy(EmployeeCategory, {employeeId: parseInt(req.params.employeeId),});
-         if(employeeCategory.length <= 0)
+         const employeeCategory =  await this.#dataSource.manager.findOneBy(EmployeeCategory, {employeeId: parseInt(req.params.employeeId),});
+         if(employeeCategory == null)
          {
            res.status(503);
            return res.json({
@@ -219,12 +219,12 @@ export default class EmployeeApi {
         });
 
         //IF NEW CATEGORY IS MECHANIC AND OLD CATEGORY IS DRIVER.
-        if(body.category.toLowerCase() == "mechanic" && employeeCategory[0].category.toLowerCase() == "driver" && mechanic == null)
+        if(body.category.toLowerCase() == "mechanic" && employeeCategory.category.toLowerCase() == "driver" && mechanic == null)
         {
           await this.#dataSource.manager.remove(driver);
           const newMechanic = new Mechanic();
           newMechanic.brandSpecialization = null;
-          newMechanic.employeeId = employee[0].employeeId;
+          newMechanic.employeeId = employee.employeeId;
 
           //SAVE MECHANIC TO DATABASE
           try {
@@ -238,11 +238,11 @@ export default class EmployeeApi {
           }
         }
          //IF NEW CATEGORY IS DRIVER AND OLD CATEGORY IS MECHANIC.
-        else if(body.category.toLowerCase() == "driver" && employeeCategory[0].category.toLowerCase() == "mechanic" && driver == null)
+        else if(body.category.toLowerCase() == "driver" && employeeCategory.category.toLowerCase() == "mechanic" && driver == null)
         {
           await this.#dataSource.manager.remove(mechanic);
           const newDriver = new Driver();
-          newDriver.employeeId = employee[0].employeeId;
+          newDriver.employeeId = employee.employeeId;
 
           //SAVE MECHANIC TO DATABASE
           try {
@@ -257,16 +257,16 @@ export default class EmployeeApi {
         }
 
 
-        employee[0].firstName = body.firstName;
-        employee[0].lastName = body.lastName;
-        employee[0].seniority = body.seniority;
-        employee[0].category = body.category;
-        employeeCategory[0].category = body.category;
+        employee.firstName = body.firstName;
+        employee.lastName = body.lastName;
+        employee.seniority = body.seniority;
+        employee.category = body.category;
+        employeeCategory.category = body.category;
 
         //SAVE/UPDATE EMPLOYEE TO DATABASE
         try
         {
-          await this.#dataSource.manager.save(employee[0]);
+          await this.#dataSource.manager.save(employee);
         }
         catch(err)
         {
@@ -289,11 +289,11 @@ export default class EmployeeApi {
 
         res.status(200);
         return res.json({
-          employeeId:employee[0].employeeId,
-          employeeFirstName:employee[0].firstName,
-          employeeLastName:employee[0].lastName,
-          employeeSeniority:employee[0].seniority,
-          employeeCategory:employee[0].category,
+          employeeId:employee.employeeId,
+          employeeFirstName:employee.firstName,
+          employeeLastName:employee.lastName,
+          employeeSeniority:employee.seniority,
+          employeeCategory:employee.category,
           success:'Employee Successfully updated.'
         });
     });
