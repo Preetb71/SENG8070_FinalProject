@@ -21,7 +21,7 @@ import ShipmentApi from "./strategy/postgresql/shipment/shipmentApi";
 
   new PhotoApi(datasource, app);
   app.get("/", (_, res) => {
-    return res.send("hello world");
+    return res.send("hello world, here are your photos.");
   });
 
   new EmployeeApi(datasource, app);

@@ -5,6 +5,7 @@ import { EmployeeCategory } from "../employeeCategory";
 import { json } from "stream/consumers";
 import { Driver } from "../driver";
 import { Mechanic } from "../mechanic";
+import { error } from "console";
 
 export default class EmployeeApi {
     #dataSource: DataSource;
@@ -21,13 +22,26 @@ export default class EmployeeApi {
       })
 
       this.#express.get("/employee/:employeeId", async (req, res) => {
-        return res.json(
-          await this.#dataSource.manager.findBy(Employee, {
-            employeeId: parseInt(req.params.employeeId),
+
+        const employee = await this.#dataSource.manager.findBy(Employee, {
+          employeeId: parseInt(req.params.employeeId),
+        })
+
+        if(employee == null)
+        {
+          res.status(503);
+          return res.json({
+            error:"Employee with the id not found"
           })
-        );
+        }
+        res.status(200);
+        return res.json({
+          employee
+        })
       });
   
+
+      //INSERT AN EMPLOYEE
       this.#express.post("/employee", async (req, res) => {
         const { body } = req;
         console.log(body);
@@ -97,34 +111,85 @@ export default class EmployeeApi {
         res.status(200);
         return res.json({
           employeeId: employee.employeeId,
+          firstName: employee.firstName,
+          lastName:employee.lastName,
+          seniority:employee.seniority,
+          category:employee.category
         });
       });
 
-       //Delete Employee using employeeId
-       this.#express.delete("/employee/:employeeId",async (req, res) => {
+        //Delete Employee using employeeId
+        this.#express.delete("/employee/:employeeId",async (req, res) => {
 
-        return res.json(   
-          await this.#dataSource.manager.createQueryBuilder()
-          .delete().from(Employee)
-          .where("employeeId = :employeeId", {employeeId:parseInt(req.params.employeeId)})
-          .execute(),
-          // await this.#dataSource.manager.createQueryBuilder()
-          // .delete().from(EmployeeCategory)
-          // .where("employeeId = :employeeId", {employeeId:parseInt(req.params.employeeId)})
-          // .execute()
-          );
+        const employee = await this.#dataSource.manager.findOneBy(Employee, {
+          employeeId: parseInt(req.params.employeeId),
         });
 
-          //Update Employee using employeeId
-          this.#express.put("/employee/:employeeId",async (req, res) => {
-            const { body } = req;
-            return res.json(   
-              await this.#dataSource.manager.createQueryBuilder()
-              .update(Employee)
-              .set({firstName:body.firstName, lastName:body.lastName, seniority:body.seniority})
-              .where("employeeId = :employeeId", {employeeId:parseInt(req.params.employeeId)})
-              .execute(),
-              );
-            });
-    }
+        //IF EMPLOYEE IS NOT FOUND.
+        if(employee == null)
+        {
+          res.status(503);
+          return res.json({
+            error: "Employee with the entered id not found!"
+          })
+        }
+
+        const employeeCategory = await this.#dataSource.manager.findOneBy(EmployeeCategory, {
+          employeeId: parseInt(req.params.employeeId),
+        });
+
+        await this.#dataSource.manager.remove(employeeCategory);  //Removes the employee category too
+
+        //REMOVE DRIVER OR MECHANIC DATA FOR THE CURRENT EMPLOYEE THAT IS BEING DELETED
+        if(employee.category.toLowerCase() == "driver")
+        {
+          const driver = await this.#dataSource.manager.findOneBy(Driver, {
+            employeeId: parseInt(req.params.employeeId),
+          });
+
+          await this.#dataSource.manager.remove(driver);
+        }
+        else if(employee.category.toLowerCase() == "mechanic")
+        {
+          const mechanic = await this.#dataSource.manager.findOneBy(Mechanic, {
+            employeeId: parseInt(req.params.employeeId),
+          });
+
+          await this.#dataSource.manager.remove(mechanic);
+        }
+
+        return res.json(   
+          await this.#dataSource.manager.remove(employee),
+          );
+      });
+
+      //Update Employee using employeeId
+      this.#express.put("/employee/:employeeId",async (req, res) => {
+        const { body } = req;
+        // //IF EMPLOYEE IS NOT FOUND.
+        // if(employee == null)
+        // {
+        //   res.status(503);
+        //   return res.json({
+        //     error: "Employee with the entered id not found!"
+        //   })
+        // }
+
+        try{
+          await this.#dataSource.manager.update(Employee, parseInt(req.params.employeeId), {firstName:body.firstName, lastName:body.lastName, seniority:body.seniority});
+        }
+        catch(err)
+        {
+          res.status(503);
+          return res.json({
+            error: "Employee Update failed in db. (Maybe employee with the given id not found",
+          });
+        }
+       
+        res.status(200);
+        return res.json({
+         error:'Employee Successfully updated.'
+        });
+    });
   }
+}
