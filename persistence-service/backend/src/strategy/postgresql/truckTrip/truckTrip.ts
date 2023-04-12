@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn, OneToOne, JoinColumn, OneToMany } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn, OneToOne, JoinColumn, OneToMany, ManyToOne } from "typeorm";
 import { Driver } from "../driver";
 import { Truck } from "../truck/truck";
 
@@ -14,20 +14,20 @@ export class TruckTrip {
   destination:string;
 
   //Driver one for the trip (A trip will have atmost one driver)
-  @OneToOne(()=>Driver)
+  @ManyToOne(()=>Driver)
   @JoinColumn()
-  driverOneId:Driver['employeeId'];
+  driverOne:Driver;
 
   //Driver two for the trip (A trip will have atmost one driver) Driver two can be null here.
-  @OneToOne(()=>Driver,{nullable:true})
+  @ManyToOne(()=>Driver,{nullable:true})
   @JoinColumn()
-  driverTwoId:Driver['employeeId']|null;
+  driverTwo:Driver|null;
 
   @Column()
   numberOfShipments:number; //Initially will be zero.
 
   //Truck Number
-  @OneToOne(()=>Truck)
+  @ManyToOne(()=>Truck)
   @JoinColumn()
-  truckNumber:Truck['truckNumber'];
+  truck:Truck;
 }

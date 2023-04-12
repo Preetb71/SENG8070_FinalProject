@@ -1,5 +1,5 @@
 import { Express } from "express";
-import { DataSource } from "typeorm";
+import { DataSource, Equal } from "typeorm";
 import { Truck } from "./truck";
 import { Mechanic } from "../mechanic";
 import { RepairTruck } from "../repairTruck";
@@ -118,7 +118,7 @@ export default class TruckApi {
 
               //REMOVE THE TRUCK'S TRIPS IF THE TRUCK IS BEING DELETED.
               const truckTrips =  await this.#dataSource.manager.findBy(TruckTrip, {
-                truckNumber: parseInt(req.params.truckNumber),
+                truck:Equal(truck),
               });
 
               //If there exists repair truck records remove it.
@@ -126,23 +126,24 @@ export default class TruckApi {
               {
                   for(let i = 0; i<truckTrips.length; i++)
                   {
-                    await this.#dataSource.manager.remove(truckTrips[i]);  //REMOVES EACH TRIP RECORD RECORD OF THE TRUCK THAT IS FOUND.
+                       //REMOVE THE TRUCK'S ASSOCIATED SHIPMENT DATA IF THE TRUCK IS BEING DELETED.
+                      const shipments =  await this.#dataSource.manager.findBy(Shipment, {
+                        truckTrip: Equal(truckTrips[i]),
+                      });
+
+                      //If there exists repair truck records remove it.
+                      if(shipments != null)
+                      {
+                          for(let i = 0; i<shipments.length; i++)
+                          {
+                            await this.#dataSource.manager.remove(shipments[i]);  //REMOVES EACH TRIP RECORD RECORD OF THE TRUCK THAT IS FOUND.
+                          }
+                      }
+                      await this.#dataSource.manager.remove(truckTrips[i]);  //REMOVES EACH TRIP RECORD RECORD OF THE TRUCK THAT IS FOUND.
                   }
               }
 
-              //REMOVE THE TRUCK'S ASSOCIATED SHIPMENT DATA IF THE TRUCK IS BEING DELETED.
-              const shipments =  await this.#dataSource.manager.findBy(Shipment, {
-                truckNumber: parseInt(req.params.truckNumber),
-              });
-
-              //If there exists repair truck records remove it.
-              if(shipments != null)
-              {
-                  for(let i = 0; i<shipments.length; i++)
-                  {
-                    await this.#dataSource.manager.remove(shipments[i]);  //REMOVES EACH TRIP RECORD RECORD OF THE TRUCK THAT IS FOUND.
-                  }
-              }
+           
 
               await this.#dataSource.manager.remove(truck);
               res.status(200);

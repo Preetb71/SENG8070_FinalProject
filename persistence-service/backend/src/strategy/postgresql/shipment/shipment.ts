@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn, OneToOne, JoinColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn, OneToOne, JoinColumn, ManyToOne } from "typeorm";
 import { TruckTrip } from "../truckTrip";
 import { Customer } from "../customer";
 
@@ -13,17 +13,11 @@ export class Shipment {
   @Column()
   shipmentValue:number;
 
-  @Column()
-  origin:string;
-
-  @Column()
-  destination:string;
-
-  @OneToOne(()=>TruckTrip)
+  @ManyToOne(()=>TruckTrip)
   @JoinColumn()
-  truckNumber:TruckTrip['truckNumber'];
+  truckTrip:TruckTrip;
 
-  @OneToOne(()=>Customer)
+  @ManyToOne(()=>Customer)
   @JoinColumn()
-  customerId:Customer['customerId'];
+  customer:Customer;
 }
