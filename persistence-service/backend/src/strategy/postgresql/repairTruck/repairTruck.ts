@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn, OneToOne, JoinColumn, OneToMany } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn, OneToOne, JoinColumn, OneToMany, ManyToMany, ManyToOne } from "typeorm";
 import { Truck } from "../truck";
 import { Mechanic } from "../mechanic";
 
@@ -7,12 +7,12 @@ export class RepairTruck {
   @PrimaryGeneratedColumn()
   id:number;             
 
-  @OneToOne(()=>Truck)
+  @ManyToOne(()=>Truck)
   @JoinColumn()
   truckNumber:Truck;
 
   //FirstName of employee who is mechanic 
-  @OneToOne(()=>Mechanic)
+  @ManyToOne(()=>Mechanic)
   @JoinColumn()
   mechanicName:Mechanic;
 

@@ -25,11 +25,13 @@ export default class RepairTruckApi {
           })
         }
 
+        console.log(repairTruck);
+
         res.status(200);
         return res.json({
             repairTruckId:repairTruck.id,
-            repairTruckName:repairTruck.truckNumber.truckBrand,
-            repairTruckMechanicEmployeeId:repairTruck.mechanicName.employeeId,
+            repairTruckName:JSON.stringify(repairTruck.truckNumber),
+            repairTruckMechanic:JSON.stringify(repairTruck.mechanicName),
             daysOfRepair:repairTruck.daysOfRepair
         });
       });
@@ -94,8 +96,8 @@ export default class RepairTruckApi {
         res.status(200);
         return res.json({
           id: repairTruck.id,
-          truckNumber: repairTruck.truckNumber,
-          mechanicName: repairTruck.mechanicName,
+          truckNumber: JSON.stringify(repairTruck.truckNumber),
+          mechanicName: JSON.stringify(repairTruck.mechanicName),
           daysOfRepair: repairTruck.daysOfRepair
         });
       });
@@ -115,17 +117,19 @@ export default class RepairTruckApi {
           })
         }
 
-        //Reduce the number of repair as this record is being deleted for the truck.
-        if(repairTruck.truckNumber.numberOfRepairs > 0)
-        {
-          repairTruck.truckNumber.numberOfRepairs -= 1;
-        }
+        console.log(repairTruck);
+
+        // //Reduce the number of repair as this record is being deleted for the truck.
+        // if(repairTruck.truckNumber.numberOfRepairs > 0)
+        // {
+        //   repairTruck.truckNumber.numberOfRepairs -= 1;
+        // }
 
         await this.#dataSource.manager.remove(repairTruck);
         
         res.status(200);
         return res.json({
-          success:`Repair Record for TruckNumber: ${repairTruck.truckNumber.truckNumber} has been successfully removed from the database.`
+          success:`Repair Record for TruckNumber has been successfully removed from the database.`
         });
         });
 
