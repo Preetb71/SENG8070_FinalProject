@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn, OneToOne, JoinColumn, OneToMany } from "typeorm";
 import { Truck } from "../truck";
-import { Employee } from "../employee";
+import { Mechanic } from "../mechanic";
 
 @Entity()
 export class RepairTruck {
@@ -9,12 +9,12 @@ export class RepairTruck {
 
   @OneToOne(()=>Truck)
   @JoinColumn()
-  truckNumber:Truck['truckNumber'];
+  truckNumber:Truck;
 
   //FirstName of employee who is mechanic 
-  @OneToOne(()=>Employee,{nullable:true})
+  @OneToOne(()=>Mechanic)
   @JoinColumn()
-  mechanicName:Employee['firstName'];
+  mechanicName:Mechanic;
 
   @Column()
   daysOfRepair:number;

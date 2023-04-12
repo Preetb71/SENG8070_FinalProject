@@ -80,7 +80,7 @@ export default class MechanicApi {
         return res.json({
           mechanicId:mechanic.id,
           employeeId:mechanic.employeeId,
-          brandSpecialization:mechanic.brandSpecialization,
+          brandSpecialization:mechanic.brandSpecialization?.truckBrand,
           success:"Brand Specialization Successfully added for the mechanic."
         });
       });
@@ -117,7 +117,7 @@ export default class MechanicApi {
           employeeLastName:employee.lastName,
           employeeSeniority:employee.seniority,
           employeeCategory:employee.category,
-          truckBrand:mechanic.brandSpecialization
+          truckBrand:mechanic.brandSpecialization?.truckBrand
         });
       });
   

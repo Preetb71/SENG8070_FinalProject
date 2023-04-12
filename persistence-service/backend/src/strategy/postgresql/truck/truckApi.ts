@@ -104,7 +104,7 @@ export default class TruckApi {
 
               //REMOVE THE TRUCK'S REPAIR RECORDs IF THE TRUCK IS BEING DELETED.
               const repairTruck =  await this.#dataSource.manager.findBy(RepairTruck, {
-                truckNumber: parseInt(req.params.truckNumber),
+                truckNumber: truck,
               });
 
               //If there exists repair truck records remove it.
