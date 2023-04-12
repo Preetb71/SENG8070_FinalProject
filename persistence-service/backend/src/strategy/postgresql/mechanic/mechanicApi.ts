@@ -5,6 +5,8 @@ import { parse } from "path";
 import { request } from "http";
 import { Employee } from "../employee";
 import { EmployeeCategory } from "../employeeCategory";
+import { Truck } from "../truck";
+import { parseArgs } from "util";
 
 export default class MechanicApi {
     #dataSource: DataSource;
@@ -15,17 +17,73 @@ export default class MechanicApi {
       this.#express = express;
   
       //Add/Update brand specialization
-      // this.#express.put("/mechanic/:truckNumber", async (req, res) => {
-      //   const { body } = req;
-      //   console.log(body);
-      //   return res.json(
-      //     await this.#dataSource.manager.createQueryBuilder()
-      //     .update(Mechanic)
-      //     .set({brandS: body.category})
-      //     .where("employeeId = :employeeId", {employeeId:parseInt(req.params.employeeId)})
-      //     .execute()
-      //   );
-      // });
+      this.#express.put("/mechanic/:employeeId", async (req, res) => {
+        const { body } = req;
+        console.log(body);
+        
+        //GET THE MECHANIC WHOSE ID IS THE EMPLOYEE ID
+        const mechanic = await this.#dataSource.manager.findOneBy(Mechanic, {
+          employeeId: parseInt(req.params.employeeId),
+        });
+
+        if(mechanic == null)
+        {
+          res.status(503);
+          return res.json({
+            error:"No mechanic employee found with the given employee Id."
+          })
+        }
+        
+        if(mechanic.brandSpecialization == null)
+        {
+          console.log("Truck Brand is empty");
+        }
+
+        const employee = await this.#dataSource.manager.findOneBy(Employee,{
+          employeeId:parseInt(req.params.employeeId),
+        });
+
+        if(employee == null)
+        {
+          res.status(503);
+          return res.json({
+            error:"No employee found with the given employee Id."
+          })
+        }
+
+        const truck = await this.#dataSource.manager.findOneBy(Truck,{
+          truckBrand:body.truckBrand.toString(),});
+
+        console.log(truck);
+
+        if(truck == null)
+        {
+          res.status(503);
+          return res.json({
+            error:"No such truck is found in the database with the given truck brand."
+          })
+        }
+
+        try 
+        {
+          await this.#dataSource.manager.update(Mechanic,mechanic.id, {brandSpecialization:truck});
+          console.log(`Mechanic has been updated}`);
+        } 
+        catch (err) 
+        {
+          res.status(503);
+          return res.json({
+            error: "Mechanic Update failed in db.",
+          });
+        }
+        res.status(200);
+        return res.json({
+          mechanicId:mechanic.id,
+          employeeId:mechanic.employeeId,
+          brandSpecialization:mechanic.brandSpecialization,
+          success:"Brand Specialization Successfully added for the mechanic."
+        });
+      });
 
       //Get a mechanic and their details
       this.#express.get("/mechanic/:employeeId", async (req, res) => {
@@ -58,7 +116,8 @@ export default class MechanicApi {
           employeeFirstName:employee.firstName,
           employeeLastName:employee.lastName,
           employeeSeniority:employee.seniority,
-          employeeCategory:employee.category
+          employeeCategory:employee.category,
+          truckBrand:mechanic.brandSpecialization
         });
       });
   
@@ -95,18 +154,6 @@ export default class MechanicApi {
           success:'Mechanic and its associated entities removed successfully.'
         });
       });
-
-        //Update Mechanic's Brand using employeeId  (Can update the whole employee details which are drivers)
-        // this.#express.put("/mechanic/:employeeId",async (req, res) => {
-        //   const { body } = req;
-        //   return res.json(   
-        //     await this.#dataSource.manager.createQueryBuilder()
-        //     .update(Mechanic)
-        //     .set({category: body.category})
-        //     .where("employeeId = :employeeId", {employeeId:parseInt(req.params.employeeId)})
-        //     .execute()
-        //     );
-        //   });
     }
 
     

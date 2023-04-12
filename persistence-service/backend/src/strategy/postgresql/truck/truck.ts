@@ -14,7 +14,7 @@ export class Truck {
   @Column()
   truckCapacity:number;
 
-  @Column()
+  @Column() 
   truckYear:number;
 
   //Will be added automatically if the repair data for this truck is added.

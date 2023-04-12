@@ -13,5 +13,5 @@ export class Mechanic {
 
   @OneToOne(()=>Truck, {nullable:true})
   @JoinColumn()
-  brandSpecialization:Truck['truckBrand']|null   //Truck Brand Foreign Key //Is null initially
+  brandSpecialization:Truck|null;   //Truck Brand Foreign Key //Is null initially
 }
