@@ -1,6 +1,7 @@
 import { Express } from "express";
 import { DataSource } from "typeorm";
 import { Customer } from "./customer";
+import { Shipment } from "../shipment";
 
 export default class CustomerApi {
     #dataSource: DataSource;
@@ -75,14 +76,34 @@ export default class CustomerApi {
             error:"No customer found by the given id."
           })
         }
+        const shipmentWithThisCustomerReference = await this.#dataSource.manager.find(Shipment, {
+          relations:{customer :true},
+          where:{
+            customer:{
+              customerId:customer.customerId
+            }
+          }
+        });
+
+
+        //REMOVE THIS CUSTOMER'S REFERENCE FROM SHIPMENT TABLE IF THERE EXISTS ANY.
+        if(shipmentWithThisCustomerReference.length > 0)
+        {
+          for(let i= 0; i<shipmentWithThisCustomerReference.length; i++)
+              {
+                if(shipmentWithThisCustomerReference[i] != null)
+                {
+                    // truckTripDriverOne[i].driverOne = null;
+                  await this.#dataSource.manager.update(Shipment, {shipmentId:shipmentWithThisCustomerReference[i].shipmentId}, {customer:null} )
+                  // await this.#dataSource.manager.save(truckTripDriverOne[i]);
+                }
+              }
+        }
 
         await this.#dataSource.manager.remove(customer);
 
         res.status(200);
-        return res.json
-        ({
-            success:"Customer successfully removed from the db."
-          });
+        return res.send("Customer and its associations were successfully removed from the db.")
         });
 
         //Update Customer using customerId
