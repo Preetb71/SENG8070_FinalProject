@@ -14,12 +14,12 @@ export class TruckTrip {
   destination:string;
 
   //Driver one for the trip (A trip will have atmost one driver)
-  @ManyToOne(()=>Driver)
+  @ManyToOne(()=>Driver, {nullable:true, onDelete:'CASCADE'})
   @JoinColumn()
-  driverOne:Driver;
+  driverOne:Driver|null;
 
   //Driver two for the trip (A trip will have atmost one driver) Driver two can be null here.
-  @ManyToOne(()=>Driver,{nullable:true})
+  @ManyToOne(()=>Driver,{nullable:true, onDelete:'CASCADE'})
   @JoinColumn()
   driverTwo:Driver|null;
 
@@ -27,7 +27,7 @@ export class TruckTrip {
   numberOfShipments:number; //Initially will be zero.
 
   //Truck Number
-  @ManyToOne(()=>Truck)
+  @ManyToOne(()=>Truck, {nullable:true, onDelete:'CASCADE'})
   @JoinColumn()
-  truck:Truck;
+  truck:Truck | null;
 }

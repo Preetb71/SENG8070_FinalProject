@@ -11,11 +11,13 @@ import { parseArgs } from "util";
 export default class MechanicApi {
     #dataSource: DataSource;
     #express: Express;
-  
+    
     constructor(dataSource: DataSource, express: Express) {
       this.#dataSource = dataSource;
       this.#express = express;
-  
+
+      //DECLARED A GLOBAL VARIABLE TO USE ALL OVER THE FILE.
+      var truckBrandName = "none";
       //Add/Update brand specialization
       this.#express.put("/mechanic/:employeeId", async (req, res) => {
         const { body } = req;
@@ -51,36 +53,60 @@ export default class MechanicApi {
           })
         }
 
-        const truck = await this.#dataSource.manager.findOneBy(Truck,{
-          truckBrand:body.truckBrand.toString(),});
 
-        console.log(truck);
-
-        if(truck == null)
+        //IF A BRAND NAME HAS BEEN PASSED IN THE BODY.
+        if(body.truckBrand != null)
         {
-          res.status(503);
-          return res.json({
-            error:"No such truck is found in the database with the given truck brand."
-          })
+          const truck = await this.#dataSource.manager.findOneBy(Truck,{
+            truckBrand:body.truckBrand.toString(),});
+  
+          console.log(truck);
+  
+          if(truck == null)
+          {
+            res.status(503);
+            return res.json({
+              error:"No such truck is found in the database with the given truck brand."
+            })
+          }
+          truckBrandName = truck.truckBrand;
+          console.log(truckBrandName);
+          try 
+          {
+            await this.#dataSource.manager.update(Mechanic,mechanic.id, {brandSpecialization:truck});
+            console.log(`Mechanic has been updated}`);
+          } 
+          catch (err) 
+          {
+            res.status(503);
+            return res.json({
+              error: "Mechanic Update failed in db.",
+            });
+          }
         }
 
-        try 
-        {
-          await this.#dataSource.manager.update(Mechanic,mechanic.id, {brandSpecialization:truck});
-          console.log(`Mechanic has been updated}`);
-        } 
-        catch (err) 
-        {
-          res.status(503);
-          return res.json({
-            error: "Mechanic Update failed in db.",
-          });
+        //IF NULL HAS BEEN PASSED IN BRANDNAME
+        else{
+          truckBrandName = "none";
+          try 
+          {
+            await this.#dataSource.manager.update(Mechanic,mechanic.id, {brandSpecialization:null});
+            console.log(`Mechanic has been updated}`);
+          } 
+          catch (err) 
+          {
+            res.status(503);
+            return res.json({
+              error: "Mechanic Update failed in db.",
+            });
+          }
         }
+
         res.status(200);
         return res.json({
           mechanicId:mechanic.id,
           employeeId:mechanic.employeeId,
-          brandSpecialization:mechanic.brandSpecialization?.truckBrand,
+          brandSpecialization:truckBrandName,
           success:"Brand Specialization Successfully added for the mechanic."
         });
       });
@@ -110,6 +136,8 @@ export default class MechanicApi {
             error:"Mechanic Employee Not Found with the given Id.",
           })
         }
+
+        res.status(200);
         return res.json({
           mechanicId:mechanic.id,
           employeeId:employee.employeeId,
@@ -117,7 +145,7 @@ export default class MechanicApi {
           employeeLastName:employee.lastName,
           employeeSeniority:employee.seniority,
           employeeCategory:employee.category,
-          truckBrand:mechanic.brandSpecialization?.truckBrand
+          brandSpecialization:truckBrandName
         });
       });
   

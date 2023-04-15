@@ -1,11 +1,13 @@
 import { Express } from "express";
-import { DataSource, IsNull } from "typeorm";
+import { DataSource, Equal, IsNull } from "typeorm";
 import { Employee } from "./employee";
 import { EmployeeCategory } from "../employeeCategory";
 import { json } from "stream/consumers";
 import { Driver } from "../driver";
 import { Mechanic } from "../mechanic";
 import { error } from "console";
+import { TruckTrip } from "../truckTrip";
+import { RepairTruck } from "../repairTruck";
 
 export default class EmployeeApi {
     #dataSource: DataSource;
@@ -15,10 +17,11 @@ export default class EmployeeApi {
       this.#dataSource = dataSource;
       this.#express = express;
 
-      this.#express.get("/employee/dropDatabase", async(_,res)=>{
-        return res.json(
-          this.#dataSource.dropDatabase()
-        )
+      this.#express.get("/dropDatabase", async(_,res)=>{
+        await this.#dataSource.dropDatabase();
+        await this.#dataSource.destroy();
+        await this.#dataSource.initialize();
+        return res.send("Database has been successfully reset.")
       })
 
 
@@ -154,7 +157,6 @@ export default class EmployeeApi {
           employeeId: parseInt(req.params.employeeId),
         });
 
-        await this.#dataSource.manager.remove(employeeCategory);  //Removes the employee category too
 
         //REMOVE DRIVER OR MECHANIC DATA FOR THE CURRENT EMPLOYEE THAT IS BEING DELETED
         if(employee.category.toLowerCase() == "driver")
@@ -162,6 +164,65 @@ export default class EmployeeApi {
           const driver = await this.#dataSource.manager.findOneBy(Driver, {
             employeeId: parseInt(req.params.employeeId),
           });
+
+          //#region THIS WILL REMOVE THE DRIVER REFERENCES FROM ANY TRUCK TRIP THAT HAS THEM ASSIGNED.
+
+          if(driver != null)
+          {
+            console.log(JSON.stringify(driver));
+            const truckTripDriverOne = await this.#dataSource.manager.find(TruckTrip, {
+              relations:{driverOne :true},
+              where:{
+                driverOne:{
+                  employeeId:driver.employeeId
+                }
+              }
+            });
+  
+            // const truckTripDriverOne = await this.#dataSource.manager.findBy(TruckTrip, {
+            //   driverOne: Equal(driver),
+            // });
+            
+            
+            if(truckTripDriverOne.length > 0)
+            {
+              for(let i= 0; i<truckTripDriverOne.length; i++)
+              {
+                if(truckTripDriverOne[i] != null)
+                {
+                    // truckTripDriverOne[i].driverOne = null;
+                  await this.#dataSource.manager.update(TruckTrip, {tripId:truckTripDriverOne[i].tripId}, {driverOne:null} )
+                  // await this.#dataSource.manager.save(truckTripDriverOne[i]);
+                }
+              }
+            }
+  
+            // const truckTripDriverTwo = await this.#dataSource.manager.findBy(TruckTrip, {
+            //   driverTwo: Equal(driver),
+            // });
+            const truckTripDriverTwo = await this.#dataSource.manager.find(TruckTrip, {
+              where:{
+                driverTwo:{
+                  employeeId:driver.employeeId
+                }
+              }
+            });
+    
+            
+            if(truckTripDriverTwo.length > 0)
+            {
+              for(let i= 0; i<truckTripDriverTwo.length; i++)
+              {
+                if(truckTripDriverTwo[i] != null)
+                {
+                    // truckTripDriverTwo[i].driverTwo = null;
+                    // await this.#dataSource.manager.save(truckTripDriverTwo[i]);
+                    await this.#dataSource.manager.update(TruckTrip, {tripId:truckTripDriverTwo[i].tripId}, {driverTwo:null} )
+                }
+              }
+            }
+            //#endregion THIS WILL REMOVE THE DRIVER REFERENCES FROM ANY TRUCK TRIP THAT HAS THEM ASSIGNED.
+          }
 
           await this.#dataSource.manager.remove(driver);
         }
@@ -171,8 +232,28 @@ export default class EmployeeApi {
             employeeId: parseInt(req.params.employeeId),
           });
 
+          //#region THIS WILL REMOVE THE MECHANIC REFERENCES FROM ANY REPAIR TRUCK RECORDS THAT HAS THEM ASSIGNED.
+            const repairTruckWithMechanic = await this.#dataSource.manager.findBy(RepairTruck, {
+              mechanicName: Equal(mechanic),
+            });
+            
+            //If MechanicReference IS FOUND.
+            if(repairTruckWithMechanic.length > 0)
+            {
+              for(let i= 0; i<repairTruckWithMechanic.length; i++)
+              {
+                // repairTruckWithMechanic[i].mechanicName = null;
+                // await this.#dataSource.manager.save(repairTruckWithMechanic[i]);
+                await this.#dataSource.manager.update(RepairTruck, {id:repairTruckWithMechanic[i].id}, {mechanicName:null} )
+              }
+            }
+
+          //#endregion THIS WILL REMOVE THE MECHANIC REFERENCES FROM ANY REPAIR TRUCK RECORDS THAT HAS THEM ASSIGNED.
+
           await this.#dataSource.manager.remove(mechanic);
         }
+        
+        await this.#dataSource.manager.remove(employeeCategory);  //Removes the employee category too
 
         await this.#dataSource.manager.remove(employee);
 
@@ -221,6 +302,38 @@ export default class EmployeeApi {
         //IF NEW CATEGORY IS MECHANIC AND OLD CATEGORY IS DRIVER.
         if(body.category.toLowerCase() == "mechanic" && employeeCategory.category.toLowerCase() == "driver" && mechanic == null)
         {
+          //#region THIS WILL REMOVE THE DRIVER REFERENCES FROM ANY TRUCK TRIP THAT HAS THEM ASSIGNED.
+          const truckTripDriverOne = await this.#dataSource.manager.findBy(TruckTrip, {
+            driverOne: Equal(driver),
+          });
+          
+          
+          if(truckTripDriverOne.length > 0)
+          {
+            for(let i= 0; i<truckTripDriverOne.length; i++)
+            {
+              // truckTripDriverOne[i].driverOne = null;
+              // await this.#dataSource.manager.save(truckTripDriverOne[i]);
+              await this.#dataSource.manager.update(TruckTrip, {tripId:truckTripDriverOne[i].tripId}, {driverOne:null} )
+            }
+          }
+
+          const truckTripDriverTwo = await this.#dataSource.manager.findBy(TruckTrip, {
+            driverTwo: Equal(driver),
+          });
+  
+          
+          if(truckTripDriverOne.length > 0)
+          {
+            for(let i= 0; i<truckTripDriverOne.length; i++)
+            {
+              // truckTripDriverTwo[i].driverTwo = null;
+              // await this.#dataSource.manager.save(truckTripDriverTwo[i]);
+              await this.#dataSource.manager.update(TruckTrip, {tripId:truckTripDriverTwo[i].tripId}, {driverTwo:null} )
+            }
+          }
+          //#endregion THIS WILL REMOVE THE DRIVER REFERENCES FROM ANY TRUCK TRIP THAT HAS THEM ASSIGNED.
+
           await this.#dataSource.manager.remove(driver);
           const newMechanic = new Mechanic();
           newMechanic.brandSpecialization = null;
@@ -240,6 +353,25 @@ export default class EmployeeApi {
          //IF NEW CATEGORY IS DRIVER AND OLD CATEGORY IS MECHANIC.
         else if(body.category.toLowerCase() == "driver" && employeeCategory.category.toLowerCase() == "mechanic" && driver == null)
         {
+
+           //#region THIS WILL REMOVE THE MECHANIC REFERENCES FROM ANY REPAIR TRUCK RECORDS THAT HAS THEM ASSIGNED.
+           const repairTruckWithMechanic = await this.#dataSource.manager.findBy(RepairTruck, {
+            mechanicName: Equal(mechanic),
+          });
+          
+          //If MechanicReference IS FOUND.
+          if(repairTruckWithMechanic.length > 0)
+          {
+            for(let i= 0; i<repairTruckWithMechanic.length; i++)
+            {
+              // repairTruckWithMechanic[i].mechanicName = null;
+              // await this.#dataSource.manager.save(repairTruckWithMechanic[i]);
+              await this.#dataSource.manager.update(RepairTruck, {id:repairTruckWithMechanic[i].id}, {mechanicName:null} )
+            }
+          }
+
+        //#endregion THIS WILL REMOVE THE MECHANIC REFERENCES FROM ANY REPAIR TRUCK RECORDS THAT HAS THEM ASSIGNED.
+
           await this.#dataSource.manager.remove(mechanic);
           const newDriver = new Driver();
           newDriver.employeeId = employee.employeeId;
@@ -255,7 +387,6 @@ export default class EmployeeApi {
             });
           }
         }
-
 
         employee.firstName = body.firstName;
         employee.lastName = body.lastName;

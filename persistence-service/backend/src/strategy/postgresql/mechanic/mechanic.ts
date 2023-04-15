@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn, OneToOne, JoinColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn, OneToOne, JoinColumn, ManyToOne } from "typeorm";
 import { Employee } from "../employee/employee";
 import { Truck } from "../truck";
 
@@ -7,11 +7,11 @@ export class Mechanic {
   @PrimaryGeneratedColumn()
   id:number;             
 
-  @OneToOne(()=>Employee)
+  @OneToOne(()=>Employee, {onDelete:'CASCADE'})
   @JoinColumn()
   employeeId:Employee['employeeId'];    //EmployeeID foreign key
 
-  @OneToOne(()=>Truck, {nullable:true})
+  @ManyToOne(()=>Truck, {nullable:true, onDelete:'CASCADE'})
   @JoinColumn()
   brandSpecialization:Truck|null;   //Truck Brand Foreign Key //Is null initially
 }

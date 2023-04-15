@@ -13,11 +13,11 @@ export class Shipment {
   @Column()
   shipmentValue:number;
 
-  @ManyToOne(()=>TruckTrip)
+  @ManyToOne(()=>TruckTrip, {onDelete:'CASCADE'})
   @JoinColumn()
   truckTrip:TruckTrip;
 
-  @ManyToOne(()=>Customer)
+  @ManyToOne(()=>Customer, {onDelete:'CASCADE'})
   @JoinColumn()
   customer:Customer;
 }

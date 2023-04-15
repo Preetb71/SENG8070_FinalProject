@@ -10,6 +10,7 @@ import { TruckTrip } from "./truckTrip";
 import { Customer } from "./customer";
 import { RepairTruck } from "./repairTruck";
 import { Shipment } from "./shipment";
+import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
 dotenv.config();
 
 
@@ -24,3 +25,6 @@ export const postgresDataSource = new DataSource({
   synchronize: true,
   logging: false,
 });
+
+
+

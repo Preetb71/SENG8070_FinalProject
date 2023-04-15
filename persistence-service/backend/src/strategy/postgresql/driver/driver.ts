@@ -6,7 +6,7 @@ export class Driver {
   @PrimaryGeneratedColumn()
   id:number;             
 
-  @OneToOne(()=>Employee)
+  @OneToOne(()=>Employee, {onDelete:'CASCADE'})
   @JoinColumn()
   employeeId:Employee['employeeId'];    //EmployeeID foreign key
 }
