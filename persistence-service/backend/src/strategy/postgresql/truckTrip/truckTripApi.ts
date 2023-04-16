@@ -33,10 +33,10 @@ export default class TruckTripApi {
           tripId:truckTrip.tripId,
           origin:truckTrip.origin,
           destination:truckTrip.destination,
-          driverOne:JSON.stringify(truckTrip.driverOne),
-          driverTwo:JSON.stringify(truckTrip.driverTwo),
+          driverOne:truckTrip.driverOne,
+          driverTwo:truckTrip.driverTwo,
           numberOfShipments:truckTrip.numberOfShipments,
-          truck:JSON.stringify(truckTrip.truck)
+          truck:truckTrip.truck
         });
       });
   
@@ -114,10 +114,10 @@ export default class TruckTripApi {
           tripId:truckTrip.tripId,
           origin:truckTrip.origin,
           destination:truckTrip.destination,
-          driverOne:JSON.stringify(truckTrip.driverOne),
-          driverTwo:JSON.stringify(truckTrip.driverTwo),
+          driverOne:truckTrip.driverOne,
+          driverTwo:truckTrip.driverTwo,
           numberOfShipments:truckTrip.numberOfShipments,
-          truck:JSON.stringify(truckTrip.truck)
+          truck:truckTrip.truck
         });
       });
 
@@ -269,10 +269,10 @@ export default class TruckTripApi {
           tripId:truckTrip.tripId,
           origin:truckTrip.origin,
           destination:truckTrip.destination,
-          driverOne:JSON.stringify(truckTrip.driverOne),
-          driverTwo:JSON.stringify(truckTrip.driverTwo),
+          driverOne:truckTrip.driverOne,
+          driverTwo:truckTrip.driverTwo,
           numberOfShipments:truckTrip.numberOfShipments,
-          truck:JSON.stringify(truckTrip.truck)
+          truck:truckTrip.truck
         });
         });
     }

@@ -31,8 +31,8 @@ export default class RepairTruckApi {
         res.status(200);
         return res.json({
             repairTruckId:repairTruck.id,
-            repairTruckName:JSON.stringify(repairTruck.truck),
-            repairTruckMechanic:JSON.stringify(repairTruck.mechanic),
+            repairTruckName:repairTruck.truck,
+            repairTruckMechanic:repairTruck.mechanic,
             daysOfRepair:repairTruck.daysOfRepair
         });
       });
@@ -91,8 +91,8 @@ export default class RepairTruckApi {
         res.status(200);
         return res.json({
           id: repairTruck.id,
-          truckNumber: JSON.stringify(repairTruck.truck),
-          mechanicName: JSON.stringify(repairTruck.mechanic),
+          truckNumber: repairTruck.truck,
+          mechanicName: repairTruck.mechanic,
           daysOfRepair: repairTruck.daysOfRepair
         });
       });

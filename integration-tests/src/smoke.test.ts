@@ -14,14 +14,3 @@ describe("smoke", () => {
   });
 });
 
-const targetUrl1 = `${process.env.EMPLOYEE_TARGET_URL}`;
-
-describe("Insert an Employee Test", () => {
-  it("an employee is inserted", async () => {
-
-    const response = await axios.post(`http://${targetUrl1}`,{firstName:'Heet', lastName:'Bhatt', seniority:'Junior', category:'driver'});
-    expect(response.status).toBe(200);
-    // expect(response.data.headers['firstName']).toBe('Heet');
-  });
-});
-

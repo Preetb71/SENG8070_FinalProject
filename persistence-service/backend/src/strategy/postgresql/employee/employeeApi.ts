@@ -169,7 +169,6 @@ export default class EmployeeApi {
 
           if(driver != null)
           {
-            console.log(JSON.stringify(driver));
             const truckTripDriverOne = await this.#dataSource.manager.find(TruckTrip, {
               relations:{driverOne :true},
               where:{

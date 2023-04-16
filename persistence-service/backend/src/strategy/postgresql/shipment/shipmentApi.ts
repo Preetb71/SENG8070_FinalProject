@@ -96,8 +96,8 @@ export default class ShipmentApi {
           shipmentId:shipment.shipmentId,
           shipmentValue:shipment.shipmentValue,
           shipmentWeight:shipment.shipmentWeight,
-          shipmentTrip:JSON.stringify(shipment.truckTrip),
-          shipmentCustomer:JSON.stringify(shipment.customer)
+          shipmentTrip:shipment.truckTrip,
+          shipmentCustomer:shipment.customer
         });
       });
 
