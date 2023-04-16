@@ -9,12 +9,12 @@ export class RepairTruck {
 
   @ManyToOne(()=>Truck, {nullable:true,onDelete:'CASCADE'})
   @JoinColumn()
-  truckNumber:Truck | null;
+  truck:Truck | null;
 
   //FirstName of employee who is mechanic 
   @ManyToOne(()=>Mechanic, {nullable:true, onDelete:'CASCADE'})
   @JoinColumn()
-  mechanicName:Mechanic|null;
+  mechanic:Mechanic|null;
 
   @Column()
   daysOfRepair:number;

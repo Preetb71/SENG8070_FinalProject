@@ -234,7 +234,7 @@ export default class EmployeeApi {
 
           //#region THIS WILL REMOVE THE MECHANIC REFERENCES FROM ANY REPAIR TRUCK RECORDS THAT HAS THEM ASSIGNED.
             const repairTruckWithMechanic = await this.#dataSource.manager.findBy(RepairTruck, {
-              mechanicName: Equal(mechanic),
+              mechanic: Equal(mechanic),
             });
             
             //If MechanicReference IS FOUND.
@@ -244,7 +244,7 @@ export default class EmployeeApi {
               {
                 // repairTruckWithMechanic[i].mechanicName = null;
                 // await this.#dataSource.manager.save(repairTruckWithMechanic[i]);
-                await this.#dataSource.manager.update(RepairTruck, {id:repairTruckWithMechanic[i].id}, {mechanicName:null} )
+                await this.#dataSource.manager.update(RepairTruck, {id:repairTruckWithMechanic[i].id}, {mechanic:null} )
               }
             }
 
@@ -356,7 +356,7 @@ export default class EmployeeApi {
 
            //#region THIS WILL REMOVE THE MECHANIC REFERENCES FROM ANY REPAIR TRUCK RECORDS THAT HAS THEM ASSIGNED.
            const repairTruckWithMechanic = await this.#dataSource.manager.findBy(RepairTruck, {
-            mechanicName: Equal(mechanic),
+            mechanic: Equal(mechanic),
           });
           
           //If MechanicReference IS FOUND.
@@ -366,7 +366,7 @@ export default class EmployeeApi {
             {
               // repairTruckWithMechanic[i].mechanicName = null;
               // await this.#dataSource.manager.save(repairTruckWithMechanic[i]);
-              await this.#dataSource.manager.update(RepairTruck, {id:repairTruckWithMechanic[i].id}, {mechanicName:null} )
+              await this.#dataSource.manager.update(RepairTruck, {id:repairTruckWithMechanic[i].id}, {mechanic:null} )
             }
           }
 

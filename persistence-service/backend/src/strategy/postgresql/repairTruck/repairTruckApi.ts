@@ -31,8 +31,8 @@ export default class RepairTruckApi {
         res.status(200);
         return res.json({
             repairTruckId:repairTruck.id,
-            repairTruckName:JSON.stringify(repairTruck.truckNumber),
-            repairTruckMechanic:JSON.stringify(repairTruck.mechanicName),
+            repairTruckName:JSON.stringify(repairTruck.truck),
+            repairTruckMechanic:JSON.stringify(repairTruck.mechanic),
             daysOfRepair:repairTruck.daysOfRepair
         });
       });
@@ -68,15 +68,15 @@ export default class RepairTruckApi {
         }
 
         const repairTruck = new RepairTruck();
-        repairTruck.truckNumber = truck;
-        repairTruck.mechanicName = mechanic;
+        repairTruck.truck = truck;
+        repairTruck.mechanic = mechanic;
         repairTruck.daysOfRepair = body.daysOfRepair;
 
 
         //Increase the number of repairs here for the truck and update it.
         var num = truck.numberOfRepairs;
         num +=1;
-        await this.#dataSource.manager.update(Truck, {truckNumber:repairTruck.truckNumber.truckNumber}, {numberOfRepairs:num});
+        await this.#dataSource.manager.update(Truck, {truckNumber:repairTruck.truck.truckNumber}, {numberOfRepairs:num});
 
         try {
           await this.#dataSource.manager.save(repairTruck);
@@ -91,8 +91,8 @@ export default class RepairTruckApi {
         res.status(200);
         return res.json({
           id: repairTruck.id,
-          truckNumber: JSON.stringify(repairTruck.truckNumber),
-          mechanicName: JSON.stringify(repairTruck.mechanicName),
+          truckNumber: JSON.stringify(repairTruck.truck),
+          mechanicName: JSON.stringify(repairTruck.mechanic),
           daysOfRepair: repairTruck.daysOfRepair
         });
       });
@@ -113,7 +113,7 @@ export default class RepairTruckApi {
         }
 
           //#region //FIND THE TRUCK THAT WAS REPAIRED AND REDUCE ITS NUMBER OF REPAIRS
-          var repairedTruckId = repairTruck.truckNumber?.truckNumber;
+          var repairedTruckId = repairTruck.truck?.truckNumber;
           const truck = await this.#dataSource.manager.find(Truck, {
             where:{
               truckNumber:repairedTruckId
@@ -140,7 +140,7 @@ export default class RepairTruckApi {
           //#region UPDATE THE REPAIR TRUCK RELATIONS TO NULL FIRST
           //Set truck to null
             try {
-              await this.#dataSource.manager.update(RepairTruck, {id:repairTruck.id}, {truckNumber:null} )
+              await this.#dataSource.manager.update(RepairTruck, {id:repairTruck.id}, {truck:null} )
             } catch (err) {
               res.status(503);
               return res.json({
@@ -149,7 +149,7 @@ export default class RepairTruckApi {
             }
             //Set Mechanic to null
             try {
-              await this.#dataSource.manager.update(RepairTruck, {id:repairTruck.id}, {mechanicName:null} )
+              await this.#dataSource.manager.update(RepairTruck, {id:repairTruck.id}, {mechanic:null} )
             } catch (err) {
               res.status(503);
               return res.json({
@@ -201,8 +201,8 @@ export default class RepairTruckApi {
           res.status(200);
           return res.json({
               repairTruckId:repairTruck.id,
-              truckNumber:repairTruck.truckNumber,
-              mechanicName:repairTruck.mechanicName,
+              truckNumber:repairTruck.truck,
+              mechanicName:repairTruck.mechanic,
               daysOfRepair:repairTruck.daysOfRepair
              })
           });
