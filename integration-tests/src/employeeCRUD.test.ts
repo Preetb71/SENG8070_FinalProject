@@ -13,7 +13,7 @@ beforeAll(async()=>{
 });
 
 
-describe("Employee Unit Test", () => {
+describe("Employee Integration Test", () => {
     it("inserts employee into the database", async () => {
       const response = await axios.post(`http://${postemployeeUrl}`,{firstName:"Preet",lastName:"Bhatt", seniority:"Intermediate",category:"mechanic"});
       expect(response.data.firstName).toBe("Preet");
@@ -26,7 +26,7 @@ describe("Employee Unit Test", () => {
     });
   });
 
-  describe("Employee Unit Test", () => {
+  describe("Employee Integration Test", () => {
     it("gets an employee from the database", async () => {
       const response = await axios.get(`http://${getemployeeUrl}`);
       expect(response.data.employeeId).toBe(1);
@@ -39,15 +39,24 @@ describe("Employee Unit Test", () => {
     });
   });
 
-  describe("Employee Unit Test", () => {
+  describe("Employee Integration Test", () => {
     it("updates the employee with given id in the database", async () => {
-      const response = await axios.put(`http://${getemployeeUrl}`,{firstName:"Adam",lastName:"Brenner",seniority:"junior", category:"DRIVER"});
+      const response = await axios.put(`http://${getemployeeUrl}`,{firstName:"Adam",lastName:"Brenner",seniority:"junior", category:"driver"});
       expect(response.data.employeeId).toBe(1);
       expect(response.data.employeeFirstName).toBe("Adam");
       expect(response.data.employeeLastName).toBe("Brenner");
       expect(response.data.employeeSeniority).toBe("junior");
-      expect(response.data.employeeCategory).toBe("DRIVER");
+      expect(response.data.employeeCategory).toBe("driver");
       expect(response.status).toBe(200);
+      // console.log(`Employee ${response.data.employeeId} successfully updated.`);
+    });
+  });
+
+  describe("Employee Integration Test", () => {
+    it("deletes the employee with given id in the database", async () => {
+      const response = await axios.delete(`http://${getemployeeUrl}`);
+      expect(response.status).toBe(200);
+      expect(response.data.success).toBe("Employee and its associated entities successfully removed from the db.");
       // console.log(`Employee ${response.data.employeeId} successfully updated.`);
     });
   });

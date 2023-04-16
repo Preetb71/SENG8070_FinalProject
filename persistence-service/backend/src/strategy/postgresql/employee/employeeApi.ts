@@ -302,8 +302,12 @@ export default class EmployeeApi {
         if(body.category.toLowerCase() == "mechanic" && employeeCategory.category.toLowerCase() == "driver" && mechanic == null)
         {
           //#region THIS WILL REMOVE THE DRIVER REFERENCES FROM ANY TRUCK TRIP THAT HAS THEM ASSIGNED.
-          const truckTripDriverOne = await this.#dataSource.manager.findBy(TruckTrip, {
-            driverOne: Equal(driver),
+          const truckTripDriverOne = await this.#dataSource.manager.find(TruckTrip, {
+            where:{
+              driverOne:{
+                employeeId:driver?.employeeId
+              }
+            }
           });
           
           
@@ -317,14 +321,18 @@ export default class EmployeeApi {
             }
           }
 
-          const truckTripDriverTwo = await this.#dataSource.manager.findBy(TruckTrip, {
-            driverTwo: Equal(driver),
+          const truckTripDriverTwo = await this.#dataSource.manager.find(TruckTrip, {
+            where:{
+              driverTwo:{
+                employeeId:driver?.employeeId
+              }
+            }
           });
   
           
-          if(truckTripDriverOne.length > 0)
+          if(truckTripDriverTwo.length > 0)
           {
-            for(let i= 0; i<truckTripDriverOne.length; i++)
+            for(let i= 0; i<truckTripDriverTwo.length; i++)
             {
               // truckTripDriverTwo[i].driverTwo = null;
               // await this.#dataSource.manager.save(truckTripDriverTwo[i]);
@@ -354,8 +362,12 @@ export default class EmployeeApi {
         {
 
            //#region THIS WILL REMOVE THE MECHANIC REFERENCES FROM ANY REPAIR TRUCK RECORDS THAT HAS THEM ASSIGNED.
-           const repairTruckWithMechanic = await this.#dataSource.manager.findBy(RepairTruck, {
-            mechanic: Equal(mechanic),
+           const repairTruckWithMechanic = await this.#dataSource.manager.find(RepairTruck, {
+            where:{
+              mechanic:{
+                employeeId:mechanic?.employeeId
+              }
+            }
           });
           
           //If MechanicReference IS FOUND.
