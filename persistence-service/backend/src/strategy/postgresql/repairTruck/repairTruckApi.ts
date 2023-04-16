@@ -12,6 +12,7 @@ export default class RepairTruckApi {
       this.#dataSource = dataSource;
       this.#express = express;
 
+      //GET REPAIR TRUCK RECORD
       this.#express.get("/repairTruck/:id", async (req, res) => {
         const repairTruck = await this.#dataSource.manager.findOneBy(RepairTruck,{
           id:parseInt(req.params.id),
@@ -35,7 +36,9 @@ export default class RepairTruckApi {
             daysOfRepair:repairTruck.daysOfRepair
         });
       });
-  
+      
+
+      //INSERT REPAIR TRUCK RECORD
       this.#express.post("/repairTruck", async (req, res) => {
         const { body } = req;
         console.log(body);
@@ -68,8 +71,12 @@ export default class RepairTruckApi {
         repairTruck.truckNumber = truck;
         repairTruck.mechanicName = mechanic;
         repairTruck.daysOfRepair = body.daysOfRepair;
-        //Increase the number of repairs here for the truck.
-        truck.numberOfRepairs += 1;
+
+
+        //Increase the number of repairs here for the truck and update it.
+        var num = truck.numberOfRepairs;
+        num +=1;
+        await this.#dataSource.manager.update(Truck, {truckNumber:repairTruck.truckNumber.truckNumber}, {numberOfRepairs:num});
 
         try {
           await this.#dataSource.manager.save(repairTruck);
@@ -79,19 +86,7 @@ export default class RepairTruckApi {
           return res.json({
             error: "Truck Repair Info creation failed in db.",
           });
-        }
-        
-        try {
-          await this.#dataSource.manager.save(truck);
-          console.log(`Truck Repair Information has been created with the id: ${repairTruck.id}`);
-        } catch (err) {
-          res.status(503);
-          return res.json({
-            error: "Truck Repair Info update failed in db.",
-          });
-        }
-
-        
+        }       
 
         res.status(200);
         return res.json({
@@ -102,7 +97,7 @@ export default class RepairTruckApi {
         });
       });
 
-       //Delete Repair using repairNumber
+       //DELETE REPAIR TRUCK RECORD
        this.#express.delete("/repairTruck/:id",async (req, res) => {
         
         const repairTruck = await this.#dataSource.manager.findOneBy(RepairTruck,{
@@ -117,49 +112,70 @@ export default class RepairTruckApi {
           })
         }
 
-        console.log(repairTruck);
+          //#region //FIND THE TRUCK THAT WAS REPAIRED AND REDUCE ITS NUMBER OF REPAIRS
+          var repairedTruckId = repairTruck.truckNumber?.truckNumber;
+          const truck = await this.#dataSource.manager.find(Truck, {
+            where:{
+              truckNumber:repairedTruckId
+            }
+          });
+  
+          if(truck.length > 0)
+          {
+            for(let i= 0; i<truck.length; i++)
+            {
+              if(truck[i] != null)
+              {
+                var num = truck[i].numberOfRepairs;
+                if(num>0)
+                {
+                  num -= 1;
+                }
+                await this.#dataSource.manager.update(Truck, {truckNumber:truck[i].truckNumber}, {numberOfRepairs:num} )
+              }
+            }
+          }
+          //#endregion
 
-        // //Reduce the number of repair as this record is being deleted for the truck.
-        // if(repairTruck.truckNumber.numberOfRepairs > 0)
-        // {
-        //   repairTruck.truckNumber.numberOfRepairs -= 1;
-        // }
+          //#region UPDATE THE REPAIR TRUCK RELATIONS TO NULL FIRST
+          //Set truck to null
+            try {
+              await this.#dataSource.manager.update(RepairTruck, {id:repairTruck.id}, {truckNumber:null} )
+            } catch (err) {
+              res.status(503);
+              return res.json({
+                error: "RepairTruck Null update failed in db.",
+              });
+            }
+            //Set Mechanic to null
+            try {
+              await this.#dataSource.manager.update(RepairTruck, {id:repairTruck.id}, {mechanicName:null} )
+            } catch (err) {
+              res.status(503);
+              return res.json({
+                error: "RepairTruck Null update failed in db.",
+              });
+            }
+          //#endregion
 
-        await this.#dataSource.manager.remove(repairTruck);
+          try {
+            await this.#dataSource.manager.remove(repairTruck);
+            console.log(`Repair Truck Record has been removed`);
+          } catch (err) {
+            res.status(503);
+            return res.json({
+              error: "Repair Truck Record removal failed in db.",
+            });
+          }
         
         res.status(200);
-        return res.json({
-          success:`Repair Record for TruckNumber has been successfully removed from the database.`
-        });
+        return res.send("Repair Record and its associated references have been successfully removed from the database.");
         });
 
-        //Update Repair using id
+        //UPDATE REPAIR TRUCK RECORD
         this.#express.put("/repairTruck/:id",async (req, res) => {
           const { body } = req;
 
-          const truck = await this.#dataSource.manager.findOneBy(Truck,{
-            truckNumber:parseInt(body.truckNumber),
-          })
-  
-          if(truck == null)
-          {
-            res.status(503);
-            return res.json({
-              error:"No such truck found to add a repair record for, with the given truck number."
-            })
-          }
-  
-          const mechanic = await this.#dataSource.manager.findOneBy(Mechanic,{
-            employeeId:parseInt(body.employeeId),
-          })
-  
-          if(mechanic == null)
-          {
-            res.status(503);
-            return res.json({
-              error:"No such mechanic found to add to repair truck, with the given employeeId."
-            })
-          }
 
           const repairTruck = await this.#dataSource.manager.findOneBy(RepairTruck,{
             id:parseInt(req.params.id),
@@ -173,12 +189,7 @@ export default class RepairTruckApi {
             })
           }
 
-          repairTruck.truckNumber = truck;
-          repairTruck.mechanicName = mechanic;
-          repairTruck.daysOfRepair = parseInt(body.daysOfRepair);
-
-          try {
-            await this.#dataSource.manager.save(repairTruck);
+          try { await this.#dataSource.manager.update(RepairTruck, {id:repairTruck.id}, {daysOfRepair:parseInt(body.daysOfRepair)});
             console.log(`Truck Repair Information has been updated with the id: ${repairTruck.id}`);
           } catch (err) {
             res.status(503);

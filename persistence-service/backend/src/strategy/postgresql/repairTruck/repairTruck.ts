@@ -7,9 +7,9 @@ export class RepairTruck {
   @PrimaryGeneratedColumn()
   id:number;             
 
-  @ManyToOne(()=>Truck, {onDelete:'CASCADE'})
+  @ManyToOne(()=>Truck, {nullable:true,onDelete:'CASCADE'})
   @JoinColumn()
-  truckNumber:Truck;
+  truckNumber:Truck | null;
 
   //FirstName of employee who is mechanic 
   @ManyToOne(()=>Mechanic, {nullable:true, onDelete:'CASCADE'})
