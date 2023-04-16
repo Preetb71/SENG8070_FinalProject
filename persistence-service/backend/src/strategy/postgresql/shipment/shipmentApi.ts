@@ -34,8 +34,8 @@ export default class ShipmentApi {
           shipmentId:shipment.shipmentId,
           shipmentValue:shipment.shipmentValue,
           shipmentWeight:shipment.shipmentWeight,
-          shipmentTrip:JSON.stringify(shipment.truckTrip),
-          shipmentCustomer:JSON.stringify(shipment.customer)
+          shipmentTrip:shipment.truckTrip,
+          shipmentCustomer:shipment.customer
         });
       });
   
@@ -75,8 +75,12 @@ export default class ShipmentApi {
         shipment.shipmentValue = body.shipmentValue;
         shipment.truckTrip = truckTrip;
         shipment.customer = customer;
-        truckTrip.numberOfShipments +=1;
-        
+        var num = truckTrip.numberOfShipments;
+        num += 1;
+
+        //UPDATE TRUCK TRUP FOR NUMBER OF SHIPMENTS
+        await this.#dataSource.manager.update(TruckTrip, {tripId:shipment.truckTrip.tripId}, {numberOfShipments:num});
+
         try {
           await this.#dataSource.manager.save(shipment);
           console.log(`Shipment has been created with the shipment id: ${shipment.shipmentId}`);
@@ -112,6 +116,42 @@ export default class ShipmentApi {
           })
         }
 
+        var tripIdShip = shipment.truckTrip?.tripId;
+
+        //FIND THE TRUCK TRIP THAT THIS SHIPMENT IS REFERENCED IN and reduce its number of shipments
+        const truckTrip = await this.#dataSource.manager.find(TruckTrip, {
+          relations:{driverOne :true},
+          where:{
+            tripId:tripIdShip
+          }
+        });
+
+        if(truckTrip.length > 0)
+        {
+          for(let i= 0; i<truckTrip.length; i++)
+          {
+            if(truckTrip[i] != null)
+            {
+              var num = truckTrip[i].numberOfShipments;
+              if(num>0)
+              {
+                num -= 1;
+              }
+              await this.#dataSource.manager.update(TruckTrip, {tripId:truckTrip[i].tripId}, {numberOfShipments:num} )
+            }
+          }
+        }
+        //update new shipment data first
+        try {
+          await this.#dataSource.manager.update(Shipment, {shipmentId:shipment.shipmentId}, {truckTrip:null} )
+          console.log(`Shipment Truck Trip has been updated to null with the shipment id: ${shipment.shipmentId}`);
+        } catch (err) {
+          res.status(503);
+          return res.json({
+            error: "Shipment update failed in db.",
+          });
+        }
+
         try {
           await this.#dataSource.manager.remove(shipment);
           console.log(`Shipment has been removed with the shipment id: ${shipment.shipmentId}`);
@@ -144,38 +184,8 @@ export default class ShipmentApi {
             })
           }
 
-          const truckTrip = await this.#dataSource.manager.findOneBy(TruckTrip,{
-            tripId:parseInt(body.tripId),
-          });
-  
-          if(truckTrip == null)
-          {
-            res.status(503);
-            return res.json({
-              error:"No such truck trip found to associate with the shipment by the given trip ID."
-            })
-          }
-  
-          const customer = await this.#dataSource.manager.findOneBy(Customer,{
-            customerId:parseInt(body.customerId),
-          });
-  
-          if(customer == null)
-          {
-            res.status(503);
-            return res.json({
-              error:"No such customer found to associate with the shipment by the given customer ID."
-            })
-          }
-
-          shipment.shipmentWeight = body.shipmentWeight;
-          shipment.shipmentValue = body.shipmentValue;
-          shipment.truckTrip = truckTrip;
-          shipment.customer = customer;
-
-
           try {
-            await this.#dataSource.manager.save(shipment);
+            await this.#dataSource.manager.update(Shipment, {shipmentId:shipment.shipmentId}, {shipmentWeight:body.shipmentWeight, shipmentValue:body.shipmentValue});
             console.log(`Shipment has been updated with the shipment id: ${shipment.shipmentId}`);
           } catch (err) {
             res.status(503);
@@ -187,10 +197,8 @@ export default class ShipmentApi {
           res.status(200);
           return res.json({
             shipmentId:shipment.shipmentId,
-            shipmentValue:shipment.shipmentValue,
-            shipmentWeight:shipment.shipmentWeight,
-            shipmentTrip:JSON.stringify(shipment.truckTrip),
-            shipmentCustomer:JSON.stringify(shipment.customer)
+            shipmentValue:body.shipmentValue,
+            shipmentWeight:body.shipmentWeight,
           });
           });
     }
